@@ -75,7 +75,7 @@
             <tbody>
                 {% for sale in sales_history %}
                 <tr>
-                    <td>{{ sale.sale_date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ sale.sale_date }}</td>
                     <td>{{ sale.total_quantity }}</td>
                     <td>${{ "%.2f"|format(sale.daily_total) }}</td>
                     <td>{{ sale.sales_count }}</td>
