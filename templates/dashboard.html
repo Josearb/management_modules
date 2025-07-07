@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    
+    <div class="modules-grid">
+        {% for module in modules %}
+        <a href="{{ url_for(module.route) }}" class="module-card">
+            <img src="{{ url_for('static', filename=module.icon) }}" alt="{{ module.name }}">
+            <h3>{{ module.name }}</h3>
+            <p>{{ module.description }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

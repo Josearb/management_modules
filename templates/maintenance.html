@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Mantenimiento{% endblock %}
+
+{% block content %}
+<div class="module-container">
+    <h2>Módulo de Mantenimiento</h2>
+    
+    <div class="actions">
+        <form action="{{ url_for('maintenance') }}" method="post" class="inline-form">
+            <input type="text" name="equipment" placeholder="Equipo" required>
+            <textarea name="description" placeholder="Descripción" required></textarea>
+            <select name="priority" required>
+                <option value="">Prioridad</option>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+            </select>
+            <input type="text" name="assigned_to" placeholder="Asignado a" required>
+            <input type="date" name="due_date" required>
+            <button type="submit" class="btn-primary">Crear Tarea</button>
+        </form>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Equipo</th>
+                <th>Descripción</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Asignado a</th>
+                <th>Fecha límite</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.id }}</td>
+                <td>{{ task.equipment }}</td>
+                <td>{{ task.description }}</td>
+                <td class="priority-{{ task.priority|lower }}">{{ task.priority }}</td>
+                <td>{{ task.status }}</td>
+                <td>{{ task.assigned_to }}</td>
+                <td>{{ task.due_date }}</td>
+                <td>
+                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="post" class="inline-form">
+                        <input type="text" name="equipment" value="{{ task.equipment }}" required>
+                        <textarea name="description" required>{{ task.description }}</textarea>
+                        <select name="priority" required>
+                            <option value="Alta" {% if task.priority == 'Alta' %}selected{% endif %}>Alta</option>
+                            <option value="Media" {% if task.priority == 'Media' %}selected{% endif %}>Media</option>
+                            <option value="Baja" {% if task.priority == 'Baja' %}selected{% endif %}>Baja</option>
+                        </select>
+                        <select name="status" required>
+                            <option value="Pendiente" {% if task.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="En progreso" {% if task.status == 'En progreso' %}selected{% endif %}>En progreso</option>
+                            <option value="Completado" {% if task.status == 'Completado' %}selected{% endif %}>Completado</option>
+                        </select>
+                        <input type="text" name="assigned_to" value="{{ task.assigned_to }}" required>
+                        <input type="date" name="due_date" value="{{ task.due_date }}" required>
+                        <button type="submit" class="btn-small">Actualizar</button>
+                    </form>
+                    <a href="{{ url_for('complete_task', task_id=task.id) }}" class="btn-small btn-success">Completar</a>
+                    <a href="{{ url_for('delete_task', task_id=task.id) }}" class="btn-small btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

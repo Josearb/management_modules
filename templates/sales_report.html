@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Reporte Diario{% endblock %}
+
+{% block content %}
+<div class="module-container">
+    <h2>📄 Reporte de Ventas - {{ date }}</h2>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Producto</th>
+                <th>Cantidad Vendida</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.daily_sales }}</td>
+                <td>${{ "%.2f"|format(product.price) }}</td>
+                <td>${{ "%.2f"|format(product.price * product.daily_sales) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" style="text-align: right;"><strong>Total del Día:</strong></td>
+                <td><strong>${{ "%.2f"|format(total) }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="no-print" style="margin-top: 20px;">
+        <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir</button>
+        <a href="{{ url_for('sales') }}" class="btn btn-secondary">← Volver a Ventas</a>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print { display: none; }
+    body { font-family: Arial, sans-serif; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+}
+</style>
+{% endblock %}

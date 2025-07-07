@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}CRM{% endblock %}
+
+{% block content %}
+<div class="module-container">
+    <h2>Módulo de CRM</h2>
+    
+    <div class="actions">
+        <form action="{{ url_for('crm') }}" method="post" class="inline-form">
+            <input type="text" name="name" placeholder="Nombre" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="tel" name="phone" placeholder="Teléfono" required>
+            <button type="submit" class="btn-primary">Agregar Cliente</button>
+        </form>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>{{ customer.id }}</td>
+                <td>{{ customer.name }}</td>
+                <td>{{ customer.email }}</td>
+                <td>{{ customer.phone }}</td>
+                <td>
+                    <form action="{{ url_for('update_customer', customer_id=customer.id) }}" method="post" class="inline-form">
+                        <input type="text" name="name" value="{{ customer.name }}" required>
+                        <input type="email" name="email" value="{{ customer.email }}" required>
+                        <input type="tel" name="phone" value="{{ customer.phone }}" required>
+                        <button type="submit" class="btn-small">Actualizar</button>
+                    </form>
+                    <a href="{{ url_for('delete_customer', customer_id=customer.id) }}" class="btn-small btn-danger">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

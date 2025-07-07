@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradyx - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="header-max">
+        <div class="nav-extreme">
+            <h1 class="logo-edge">
+                <img src="{{ url_for('static', filename='images/icons8-circulacion-de-dinero-100.png') }}"
+                     alt="Logo"
+                     style="height: 48px; vertical-align: middle; margin-right: 12px;">
+                
+            </h1>
+            
+            <nav class="nav-edge">
+                <a href="{{ url_for('dashboard') }}" class="nav-item">Inicio</a>
+                {% if 'user_id' in session %}
+                <div class="user-edge">
+                    <a href="{{ url_for('logout') }}" class="logout-edge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        Cerrar sesión
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>Tradyx</p>
+    </footer>
+</body>
+</html>
