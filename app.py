@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from models import db, User, Product, Sale, Customer, MaintenanceTask, DailySales, init_db
+import pdfkit
+from flask import make_response
 from datetime import datetime
 import os
 from functools import wraps
@@ -509,6 +511,28 @@ def delete_user(user_id):
             db.session.rollback()
             flash(f'Error al eliminar usuario: {str(e)}', 'danger')
     return redirect(url_for('users'))
+
+@app.route('/sales/download', methods=['GET'])
+@login_required
+def download_daily_report():
+    products_sold = Product.query.filter(Product.daily_sales > 0).all()
+    total_sales = sum(p.price * p.daily_sales for p in products_sold)
+    rendered = render_template('sales_report.html',
+                           products=products_sold,
+                           total=total_sales,
+                           date=datetime.now().strftime("%d/%m/%Y"),
+                           request=request)
+
+
+    # Configuración de wkhtmltopdf
+    config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')  # Ajusta la ruta si es necesario
+    pdf = pdfkit.from_string(rendered, False, configuration=config)
+
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=Reporte_Diario.pdf'
+    return response
+
 
 if __name__ == '__main__':
     app.run(debug=True)
