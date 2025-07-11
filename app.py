@@ -136,13 +136,16 @@ def sales():
     # GET request
     products = Product.query.order_by(Product.name).all()
     
-    # Obtener ventas agrupadas por fecha
-    sales_history = db.session.query(
-        db.func.date(Sale.date).label('sale_date'),
-        db.func.sum(Sale.quantity).label('total_quantity'),
-        db.func.sum(Sale.total).label('daily_total'),
-        db.func.count(Sale.id).label('sales_count')
-    ).group_by(db.func.date(Sale.date)).order_by(db.func.date(Sale.date).desc()).all()
+    # Obtener actividades para el chatter
+    chatter_activities = db.session.query(
+        Sale, User, Product
+    ).join(
+        User, User.id == Sale.user_id
+    ).join(
+        Product, Product.id == Sale.product_id
+    ).order_by(
+        Sale.date.desc()
+    ).limit(50).all()
     
     # Calcular total acumulado del turno
     today_total = db.session.query(db.func.sum(Sale.total)).filter(
@@ -151,7 +154,7 @@ def sales():
     
     return render_template('sales.html', 
                          products=products,
-                         sales_history=sales_history,
+                         chatter_activities=chatter_activities,
                          current_date=datetime.utcnow().date(),
                          today_total=today_total)
     

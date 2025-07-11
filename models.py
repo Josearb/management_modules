@@ -34,7 +34,7 @@ class Sale(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer = db.Column(db.String(100), nullable=False)
     total = db.Column(db.Float, nullable=False)
-    date = db.Column(db.String(20), nullable=False)  # Considera usar DateTime
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)  # Considera usar DateTime
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)

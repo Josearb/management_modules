@@ -62,33 +62,36 @@
     </div>
 
     <div class="mt-4">
-        <h3>Historial de Ventas</h3>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cantidad Total Vendida</th>
-                    <th>Total Recaudado</th>
-                    <th>Transacciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sale in sales_history %}
-                <tr>
-                    <td>{{ sale.sale_date }}</td>
-                    <td>{{ sale.total_quantity }}</td>
-                    <td>${{ "%.2f"|format(sale.daily_total) }}</td>
-                    <td>{{ sale.sales_count }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-center">
-                        No hay ventas registradas
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>Actividad Reciente</h3>
+        <div class="chatter-container" style="background: #f8fafc; border-radius: 8px; padding: 1.5rem; max-height: 400px; overflow-y: auto;">
+            {% for sale, user, product in chatter_activities %}
+            <div class="chatter-message" style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                    <div style="width: 32px; height: 32px; background-color: #5D5FEF; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; font-weight: bold;">
+                        {{ user.username[0]|upper }}
+                    </div>
+                    <div>
+                        <strong>{{ user.username }}</strong>
+                        <span style="color: #718096; font-size: 0.875rem; margin-left: 0.5rem;">
+                            {{ sale.date.strftime('%d/%m/%Y %H:%M') }}
+                        </span>
+                    </div>
+                </div>
+                <div style="padding-left: 2.75rem;">
+                    <p style="margin-bottom: 0.25rem;">
+                        Vendió <strong>{{ sale.quantity }} unidades</strong> de <strong>{{ product.name }}</strong>
+                    </p>
+                    <p style="color: #4a5568;">
+                        Total: <strong>${{ "%.2f"|format(sale.total) }}</strong> | Cliente: {{ sale.customer }}
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; color: #718096; padding: 2rem;">
+                No hay actividad registrada
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
