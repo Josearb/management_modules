@@ -42,6 +42,12 @@ class Sale(db.Model):
     # Relaciones con nombres explícitos
     user = db.relationship('User', backref=db.backref('user_sales', lazy=True))
     product = db.relationship('Product', backref=db.backref('product_sales', lazy=True))
+    
+    @classmethod
+    def get_sales_by_period(cls, start_date, end_date):
+        return cls.query.filter(
+            cls.date.between(start_date, end_date)
+        ).all()
 
 class DailySales(db.Model):
     __tablename__ = 'daily_sales'

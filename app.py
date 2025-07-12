@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from models import db, User, Product, Sale, Customer, MaintenanceTask, DailySales, init_db
-import pdfkit
-from flask import make_response
 from datetime import datetime
+from analytics import analytics_bp
 import os
 from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta_aqui_12345'
+app.register_blueprint(analytics_bp, url_prefix='/analytics')
 
 # Database Configuration
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -80,9 +80,10 @@ def dashboard():
         modules = [
             {'name': 'Ventas', 'icon': 'images/sales_icon.png', 'description': 'Gestión de pedidos y facturas', 'route': 'sales'},
             {'name': 'Inventario', 'icon': 'images/inventory_icon.png', 'description': 'Gestión de productos y stock', 'route': 'inventory'},
-            {'name': 'CRM', 'icon': 'images/crm_icon.png', 'description': 'Gestión de clientes y contactos', 'route': 'crm'},
-            {'name': 'Mantenimiento', 'icon': 'images/maintenance.png', 'description': 'Gestión de tareas de mantenimiento', 'route': 'maintenance'},
-            {'name': 'Usuarios', 'icon': 'images/users.png', 'description': 'Gestión de usuarios del sistema', 'route': 'users'}
+            # {'name': 'CRM', 'icon': 'images/crm_icon.png', 'description': 'Gestión de clientes y contactos', 'route': 'crm'},
+            # {'name': 'Mantenimiento', 'icon': 'images/maintenance.png', 'description': 'Gestión de tareas de mantenimiento', 'route': 'maintenance'},
+            {'name': 'Usuarios', 'icon': 'images/users.png', 'description': 'Gestión de usuarios del sistema', 'route': 'users'},
+            {'name': 'Analíticas', 'icon': 'images/icons8-analítica-100.png', 'description': 'Estadísticas de ventas', 'route': 'analytics.dashboard'}
         ]
     else:
         modules = [
@@ -189,9 +190,9 @@ def api_create_sale():
             
             # Record sale
             new_sale = Sale(
-                customer=customer,
+                customer="Cliente ocasional",
                 total=product.price * quantity,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.utcnow(), 
                 user_id=session['user_id'],
                 product_id=product.id,
                 quantity=quantity
@@ -514,28 +515,6 @@ def delete_user(user_id):
             db.session.rollback()
             flash(f'Error al eliminar usuario: {str(e)}', 'danger')
     return redirect(url_for('users'))
-
-@app.route('/sales/download', methods=['GET'])
-@login_required
-def download_daily_report():
-    products_sold = Product.query.filter(Product.daily_sales > 0).all()
-    total_sales = sum(p.price * p.daily_sales for p in products_sold)
-    rendered = render_template('sales_report.html',
-                           products=products_sold,
-                           total=total_sales,
-                           date=datetime.now().strftime("%d/%m/%Y"),
-                           request=request)
-
-
-    # Configuración de wkhtmltopdf
-    config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')  # Ajusta la ruta si es necesario
-    pdf = pdfkit.from_string(rendered, False, configuration=config)
-
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=Reporte_Diario.pdf'
-    return response
-
 
 if __name__ == '__main__':
     app.run(debug=True)
