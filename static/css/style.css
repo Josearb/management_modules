@@ -654,3 +654,12 @@ footer {
     color: var(--gray-color);
   }
 }
+
+.btn-info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #3182CE;
+}

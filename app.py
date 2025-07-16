@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from models import db, User, Product, Sale, Customer, MaintenanceTask, DailySales, init_db
 from datetime import datetime
 from analytics import analytics_bp
 import os
 from functools import wraps
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
 app = Flask(__name__)
 app.secret_key = 'tu_clave_secreta_aqui_12345'
@@ -515,6 +521,73 @@ def delete_user(user_id):
             db.session.rollback()
             flash(f'Error al eliminar usuario: {str(e)}', 'danger')
     return redirect(url_for('users'))
+
+@app.route('/sales/report/pdf')
+@login_required
+def download_sales_pdf():
+    # Obtener productos vendidos hoy
+    products_sold = Product.query.filter(Product.daily_sales > 0).all()
+    total_sales = sum(p.price * p.daily_sales for p in products_sold)
+    current_date = datetime.now().strftime("%d/%m/%Y")
+    
+    # Crear buffer para el PDF
+    buffer = BytesIO()
+    
+    # Crear documento PDF
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    
+    # Contenido del PDF
+    elements = []
+    
+    # Título
+    elements.append(Paragraph(f"Reporte de Ventas - {current_date}", styles['Title']))
+    elements.append(Paragraph("Tradyx", styles['Normal']))
+    elements.append(Paragraph(" ", styles['Normal']))  # Espacio
+    
+    # Datos de la tabla
+    data = [["#", "Producto", "Cantidad", "Precio Unit.", "Subtotal"]]
+    
+    for idx, product in enumerate(products_sold, 1):
+        data.append([
+            str(idx),
+            product.name,
+            str(product.daily_sales),
+            f"${product.price:.2f}",
+            f"${product.price * product.daily_sales:.2f}"
+        ])
+    
+    # Total
+    data.append(["", "", "", "Total:", f"${total_sales:.2f}"])
+    
+    # Crear tabla
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, -1), (-2, -1), colors.lightgrey),
+        ('BACKGROUND', (-1, -1), (-1, -1), colors.grey),
+        ('TEXTCOLOR', (-1, -1), (-1, -1), colors.whitesmoke),
+    ]))
+    
+    elements.append(table)
+    
+    # Generar PDF
+    doc.build(elements)
+    
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"reporte_ventas_{current_date.replace('/', '-')}.pdf",
+        mimetype='application/pdf'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)
