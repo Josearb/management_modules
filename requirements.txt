@@ -7,3 +7,5 @@ Jinja2==3.0.3
 itsdangerous==2.0.1
 MarkupSafe==2.0.1
 click==8.0.4
+greenlet!=0.4.17
+reportlab
